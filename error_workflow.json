@@ -1,0 +1,52 @@
+{
+  "name": "Notificador de Errores: Boletin Matutino",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e=$input.first().json;const wfName=(e.workflow&&e.workflow.name)||'Desconocido';const nodeName=(e.error&&e.error.node&&e.error.node.name)||'Desconocido';const errMsg=((e.error&&e.error.message)||'Error sin mensaje').substring(0,300);const execUrl=(e.execution&&e.execution.url)||'#';const execId=(e.execution&&e.execution.id)||'?';const html='<!DOCTYPE html><html><body style=\"font-family:Arial,sans-serif;background:#fff3f3;padding:20px\"><div style=\"max-width:600px;margin:auto;background:white;border-radius:8px;padding:24px;border-top:4px solid #e53e3e\"><h2 style=\"color:#e53e3e;margin-top:0\">Error en workflow de n8n</h2><table style=\"width:100%\"><tr><td style=\"padding:8px 0;color:#666;width:140px\"><b>Workflow:</b></td><td>'+wfName+'</td></tr><tr><td style=\"padding:8px 0;color:#666\"><b>Nodo fallido:</b></td><td style=\"color:#e53e3e\">'+nodeName+'</td></tr><tr><td style=\"padding:8px 0;color:#666\"><b>Mensaje:</b></td><td>'+errMsg+'</td></tr><tr><td style=\"padding:8px 0;color:#666\"><b>Ver log:</b></td><td><a href=\"'+execUrl+'\" style=\"color:#4a6cf7\">Ejecucion '+execId+'</a></td></tr></table><p style=\"margin-top:20px;color:#888;font-size:13px\">Generado automaticamente por n8n.</p></div></body></html>';return[{json:{html:html,subject:'[n8n Error] '+wfName}}];"
+      },
+      "name": "Preparar Alerta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "YOUR_SENDER_EMAIL@gmail.com",
+        "toEmail": "YOUR_RECIPIENT_EMAIL@gmail.com",
+        "subject": "=$json.subject",
+        "emailFormat": "html",
+        "html": "=$json.html",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Enviar Alerta por SMTP",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [840, 300]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [[{"node": "Preparar Alerta", "type": "main", "index": 0}]]
+    },
+    "Preparar Alerta": {
+      "main": [[{"node": "Enviar Alerta por SMTP", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
