@@ -15,6 +15,7 @@ Every weekday morning this workflow:
 3. Sends the labeled batch to **Google Gemini 2.5 Flash** (free tier)
 4. Gemini compiles a clean, structured **HTML newsletter in Spanish** — preserving English tech terms like `malware`, `zero-day`, `ETFs`, `blockchain`, etc.
 5. Delivers the styled email via **SMTP** — no OAuth, no redirects, perfect for Home Labs
+6. If anything fails, an **error alert** is sent automatically to your inbox
 
 ---
 
@@ -30,6 +31,7 @@ Every weekday morning this workflow:
 - **Zero cost** — Google Gemini 2.5 Flash free tier (1,500 requests/day)
 - **Bilingual output** — Spanish prose, English technical terms preserved
 - **Compact format** — 3 headlines per section, one sentence each
+- **Error notifications** — instant email alert if any node fails
 
 ---
 
@@ -94,6 +96,28 @@ environment:
 
 Toggle **Inactive → Active** in the top-right corner. Done — the workflow runs automatically every weekday at 9:00 AM.
 
+### 6. Error Notifications (Recommended)
+
+Import `error_workflow.json` to receive an email alert whenever the main workflow fails.
+
+1. Import `error_workflow.json` into n8n (same steps as above)
+2. Open the **"Enviar Alerta por SMTP"** node in the error workflow:
+   - Set `fromEmail` → your sender Gmail address
+   - Set `toEmail` → your recipient address
+   - Link the same SMTP credential
+3. Open the **main workflow** → click the **⋯ menu (top-right) → Settings**
+4. Under **"Error Workflow"**, select **`Notificador de Errores: Boletin Matutino`**
+5. Save
+
+When the main workflow fails you will receive an HTML email with:
+
+| Field | Content |
+|---|---|
+| Workflow | Name of the failed workflow |
+| Failed node | Which node threw the error |
+| Message | Error description (up to 300 chars) |
+| Execution link | Direct URL to the failed execution log in n8n |
+
 ---
 
 ## 🛠️ Optimization Tips (Home Lab)
@@ -145,6 +169,8 @@ services:
    [AI Agent] ← [Google Gemini 2.5 Flash subnode]
          |
    [Send Email via SMTP]
+         |
+   [On any failure] ──→ [Error Trigger] → [Build Alert HTML] → [SMTP Alert Email]
 ```
 
 ---
